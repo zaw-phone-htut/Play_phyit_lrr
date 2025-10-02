@@ -7,7 +7,7 @@ import os
 import webserver
 
 load_dotenv()
-token = os.getenv("DISCORD_TOKEN")
+token = os.environ("discordkey")
 POLL_CHANNEL_ID = 1173262644854145154
 TARGET_ROLE_NAME = "Gate Mhuu"
 
