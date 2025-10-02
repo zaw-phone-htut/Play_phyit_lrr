@@ -24,7 +24,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 TIME_CHOICES = {
     "8️⃣": "8pm JST",
     "9️⃣": "9pm JST",
-    "0️⃣": "9pm JST and later",
+    "0️⃣": "9:30pm JST or later",
     "❌": "No"
 }
 # Game Poll Options
