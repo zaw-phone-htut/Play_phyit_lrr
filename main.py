@@ -262,7 +262,7 @@ async def on_raw_reaction_add(payload):
             total_time_voters = len(poll_state['time_voters'])
             total_game_votes = sum(poll_state['game_poll_votes'].values())
 
-            if total_time_voters + total_game_votes == 3:
+            if total_time_voters == 3 and total_game_votes == 3:
                 await finalize_poll_results(channel)
 
 
