@@ -27,7 +27,7 @@ TIME_CHOICES = {
     "0️⃣": "9:30pm JST or later",
     "❌": "No"
 }
-# Game Poll Options
+
 GAME_CHOICES = {
     "🐱": "PalWorld",
     "6️⃣": "RainBow Six: Siege",
@@ -40,6 +40,7 @@ poll_state = {
     'time_poll_votes': defaultdict(set),  # {'emoji_str': {user_id1, user_id2}}
     'game_poll_votes': defaultdict(int),  # {'emoji_str': vote_count}
     'time_voters': set(),          # Set of unique user IDs who voted in the time poll
+    'game_voters': set(),          # Set of unique user IDs who voted in the game poll
     'poll_channel_id': None        # The channel where the polls were started
 }
 
@@ -47,7 +48,7 @@ poll_state = {
 # --- Utility Functions ---
 
 async def create_time_poll(ctx):
-    """Creates and sends the 'Can we play?' poll."""
+
     global poll_state
 
     # Reset state for a new poll sequence
@@ -57,6 +58,7 @@ async def create_time_poll(ctx):
         'time_poll_votes': defaultdict(set),
         'game_poll_votes': defaultdict(int),
         'time_voters': set(),
+        'game_voters': set(),
         'poll_channel_id': ctx.channel.id
     }
 
@@ -202,6 +204,7 @@ async def finalize_poll_results(channel: discord.TextChannel, forced_no_end: boo
     poll_state['time_poll_id'] = None
     poll_state['game_poll_id'] = None
     poll_state['time_voters'].clear()
+    poll_state['game_voters'].clear()
 
 
 # --- Bot Events ---
@@ -253,16 +256,20 @@ async def on_raw_reaction_add(payload):
     # 2. Handle Game Poll Votes
     elif message_id == poll_state['game_poll_id']:
         if emoji_str in GAME_CHOICES:
-            # Simple count for game votes (since we don't need to track unique users for the final announcement)
+            # Track unique voters for the game poll
+            if not hasattr(poll_state, 'game_voters') or 'game_voters' not in poll_state:
+                poll_state['game_voters'] = set()
             poll_state['game_poll_votes'][emoji_str] += 1
+            poll_state['game_voters'].add(payload.user_id)
             print(
                 f"Game vote recorded: {user.name} voted for {GAME_CHOICES[emoji_str]}")
 
-            # End poll if num voters in time poll and game poll is equal to 3
-            total_time_voters = len(poll_state['time_voters'])
-            total_game_votes = sum(poll_state['game_poll_votes'].values())
-
-            if total_time_voters == 3 and total_game_votes == 3:
+            # Check if 3 unique users voted in both time and game poll, and sets are the same
+            if (
+                len(poll_state['time_voters']) == 3 and
+                len(poll_state['game_voters']) == 3 and
+                poll_state['time_voters'] == poll_state['game_voters']
+            ):
                 await finalize_poll_results(channel)
 
 
