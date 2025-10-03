@@ -258,6 +258,13 @@ async def on_raw_reaction_add(payload):
             print(
                 f"Game vote recorded: {user.name} voted for {GAME_CHOICES[emoji_str]}")
 
+            # End poll if num voters in time poll and game poll is equal to 3
+            total_time_voters = len(poll_state['time_voters'])
+            total_game_votes = sum(poll_state['game_poll_votes'].values())
+
+            if total_time_voters + total_game_votes == 3:
+                await finalize_poll_results(channel)
+
 
 @bot.event
 async def on_raw_reaction_remove(payload):
